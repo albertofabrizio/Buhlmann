@@ -11,24 +11,24 @@ last_deco_stop = 3 # in meters
 fN2=0.7808
 fHe=0.0
 
-
-pW=0.0626615132
-atm_bar = 1.01325
+GF_H = 1.0
+GF_L = 1.0
 
 ################### CONSTANTS #######################
 
 WV_PRESSURE = 0.0627            # water vapor pressure in bar, based on respiratory quotient Rq = 1.0 (Buhlmann value)
 WV_PRESSURE_SCHREINER = 0.0493  # water vapor pressure in bar, based on respiratory quotient Rq = 0.8 (Schreiner value)
+ATM_BAR = 1.01325
 
 #####################################################
 
-def corr_altitude_alveoli(fN2=0.7808, pa=1.01325, pW=0.0626615132):
+def corr_altitude_alveoli(fN2=0.7808, pa=1.01325):
     """ Corrects nitrogen partial pressure for altitude and alveolar water vapour.
     fN2: Fraction of N2 in breathed gas
     pa = Atmospheric pressure. (sea level = 1.01325 bar)
-    pw = Water vapour pressure in alveoli """
+    WV_PRESSURE = Water vapour pressure in alveoli """
     
-    ppN2 = fN2 * ( pa - pW )
+    ppN2 = fN2 * ( pa - WV_PRESSURE )
 
     return ppN2
 
@@ -47,7 +47,7 @@ def altitude(h_on_sea=0.0):
 
     return _P0 * np.exp( -cnst * h_on_sea )
 
-def initialize():
+def initialize(ht):
     """ Initialize inert gasses partial pressures and total inert gas pressure for all the 16 tissues."""
     palt = altitude(h_on_sea)
 
@@ -55,8 +55,8 @@ def initialize():
     pHe = 0
     pTot = pN2 + pHe
     
-    tissues = np.zeros((16,3))
-    for i in range(16):
+    tissues = np.zeros((ht.shape[0],3))
+    for i in range(ht.shape[0]):
         tissues[i,0] = pN2
         tissues[i,1] = pHe
         tissues[i,2] = pTot
@@ -68,18 +68,18 @@ def constant_ascent_descent(idepth, fdepth, time, tissues, ht):
     Please not that descent speed is positive and ascent is negative."""
 
     # Convert depth from meters to pressure in [Bar]
-    idepth = ((idepth / 10) + 1) * atm_bar
-    fdepth = ((fdepth / 10) + 1) * atm_bar
+    idepth = ((idepth / 10) + 1) * ATM_BAR
+    fdepth = ((fdepth / 10) + 1) * ATM_BAR
 
     speed = (fdepth-idepth) / time
 
-    for i in range(16):
+    for i in range(ht.shape[0]):
         
         P0_N2 = tissues[i,0]
         P0_He = tissues[i,1]
 
-        Pdepth_N2 = (idepth - pW) * fN2
-        Pdepth_He = (idepth - pW) * fHe
+        Pdepth_N2 = (idepth - WV_PRESSURE) * fN2
+        Pdepth_He = (idepth - WV_PRESSURE) * fHe
 
         RN2 = speed * fN2
         RHe = speed * fHe
@@ -101,15 +101,15 @@ def constant_depth(depth, t, tissues, ht):
     """ Returns the tissue loading when the diver reamins at constant depth."""
 
     # Convert depth from meters to pressure in [Bar]
-    depth = ((depth / 10) + 1) * atm_bar
+    depth = ((depth / 10) + 1) * ATM_BAR
 
-    for i in range(16):
+    for i in range(ht.shape[0]):
 
         P0_N2 = tissues[i,0]
         P0_He = tissues[i,1]
 
-        Pdepth_N2 = (depth - pW) * fN2
-        Pdepth_He = (depth - pW) * fHe
+        Pdepth_N2 = (depth - WV_PRESSURE) * fN2
+        Pdepth_He = (depth - WV_PRESSURE) * fHe
 
         Pn = P0_N2 * 2**(-t / ht[i,0]) + Pdepth_N2 * (1 - 2**(-t / ht[i,0]))
         Phe = P0_He * 2**(-t / ht[i,1]) + Pdepth_He * (1 - 2**(-t / ht[i,1]))
@@ -121,16 +121,26 @@ def constant_depth(depth, t, tissues, ht):
 
     return tissues
 
+def GF_slope(first_stop):
+    return (GF_H - GF_L)/(last_deco_stop - first_stop)
+
+def GF(first_stop, current_depth):
+    slope = GF_slope(first_stop)
+    return slope * current_depth + GF_H
+
 def check_ceiling(tissues, ht):
     """ Compute the ceiling depth based on the Buhlmann A and B values and the inert gasses partial pressure """
 
     all_ceil = []
-    for i in range(16):
+    for i in range(ht.shape[0]):
     # Compute the A and B value as a weighted average of the A and B value of each inert gas
         A = ((ht[i,2] * tissues[i,0]) + (ht[i,4] * tissues[i,1]))/tissues[i,2]
         B = ((ht[i,3] * tissues[i,0]) + (ht[i,5] * tissues[i,1]))/tissues[i,2]
-        ceil = (tissues[i,2] - A) * B
-        ceil_in_m = (ceil - atm_bar)*10
+        #ceil = (tissues[i,2] - A) * B # original equation without GF
+
+        GF_D = GF(first_stop, current_depth)
+        ceil = (tissues[i,2] - GF_D*A) / ( GF_D / B - GF_D +1 ) 
+        ceil_in_m = (ceil - ATM_BAR)*10
 
         # Round to next multiple of 3m
         all_ceil.append(3 * round(ceil_in_m/3))
@@ -148,32 +158,29 @@ def length_of_deco(curr_stop, tissues, ht):
     all_stops = np.arange(curr_stop, last_deco_stop -3, -3)
 
     # Convert stop length in Bar
-    all_stops = ((all_stops / 10) + 1) * atm_bar
-    all_stops = np.append(all_stops, atm_bar)
+    all_stops = ((all_stops / 10) + 1) * ATM_BAR
+    all_stops = np.append(all_stops, ATM_BAR)
 
     for i,stop in enumerate(all_stops[:-1]):
         stop_length = 0 
-        while((check_ceiling(tissues, ht) / 10 + 1) * atm_bar > all_stops[i+1]):
+        while((check_ceiling(tissues, ht) / 10 + 1) * ATM_BAR > all_stops[i+1]):
             # Stay 1 min and update the inert gas partial pressure
             tissues = constant_depth(stop, 1.0, tissues, ht)
             stop_length += 1
 
-        print(np.floor((stop/atm_bar -1 )*10) , stop_length)
+        print(np.floor((stop/ATM_BAR -1 )*10) , stop_length)
 
-    return 0
-
-def no_deco():
     return 0
 
 def main():
 
     # Import half_times
-    ht = np.loadtxt("half_times_ZH-L16c.csv", comments='#', delimiter=",")
+    ht = np.loadtxt("half_times_ZH-L16b.csv", comments='#', delimiter=",")
     
     # If the diver spent enough time on surface.
     if not repetitive:
         # Initialize all the tissues to air partial pressures.
-        tissues = initialize()
+        tissues = initialize(ht)
 
     tissues = constant_ascent_descent(0, 40, 15, tissues, ht)
     tissues = constant_depth(40, 20, tissues, ht) 
@@ -193,11 +200,6 @@ def main():
     else:
         print("Ceiling: "+str(ceil)+" m")
         length_of_deco(ceil, tissues, ht)
-
-
-
-
-
 
 if __name__ == "__main__":
     main()
