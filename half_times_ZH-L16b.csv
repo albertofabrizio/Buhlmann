@@ -1,65 +1,17 @@
-            "ZHL16b": [
-                tcCoefficients(name='1',
-                               NitrogenHT=5.00, HeliumHT=1.88,
-                               NitrogenA=1.1696, NitrogenB=0.5578,
-                               HeliumA=1.6189, HeliumB=0.4770),
-                tcCoefficients(name='2',
-                               NitrogenHT=8.00, HeliumHT=3.02,
-                               NitrogenA=1.0000, NitrogenB=0.6514,
-                               HeliumA=1.3830, HeliumB=0.5747),
-                tcCoefficients(name='3',
-                               NitrogenHT=12.50, HeliumHT=4.72,
-                               NitrogenA=0.8618, NitrogenB=0.7222,
-                               HeliumA=1.1919, HeliumB=0.6527),
-                tcCoefficients(name='4',
-                               NitrogenHT=18.50, HeliumHT=6.99,
-                               NitrogenA=0.7562, NitrogenB=0.7825,
-                               HeliumA=1.0458, HeliumB=0.7223),
-                tcCoefficients(name='5',
-                               NitrogenHT=27.00, HeliumHT=10.21,
-                               NitrogenA=0.6667, NitrogenB=0.8126,
-                               HeliumA=0.9220, HeliumB=0.7582),
-                tcCoefficients(name='6',
-                               NitrogenHT=38.30, HeliumHT=14.48,
-                               NitrogenA=0.5600, NitrogenB=0.8434,
-                               HeliumA=0.8205, HeliumB=0.7957),
-                tcCoefficients(name='7',
-                               NitrogenHT=54.30, HeliumHT=20.53,
-                               NitrogenA=0.4947, NitrogenB=0.8693,
-                               HeliumA=0.7305, HeliumB=0.8279),
-                tcCoefficients(name='8',
-                               NitrogenHT=77.00, HeliumHT=29.11,
-                               NitrogenA=0.4500, NitrogenB=0.8910,
-                               HeliumA=0.6502, HeliumB=0.8553),
-                tcCoefficients(name='9',
-                               NitrogenHT=109.00, HeliumHT=41.20,
-                               NitrogenA=0.4187, NitrogenB=0.9092,
-                               HeliumA=0.5950, HeliumB=0.8757),
-                tcCoefficients(name='10',
-                               NitrogenHT=146.00, HeliumHT=55.19,
-                               NitrogenA=0.3798, NitrogenB=0.9222,
-                               HeliumA=0.5545, HeliumB=0.8903),
-                tcCoefficients(name='11',
-                               NitrogenHT=187.00, HeliumHT=70.69,
-                               NitrogenA=0.3497, NitrogenB=0.9319,
-                               HeliumA=0.5333, HeliumB=0.8997),
-                tcCoefficients(name='12',
-                               NitrogenHT=239.00, HeliumHT=90.34,
-                               NitrogenA=0.3223, NitrogenB=0.9403,
-                               HeliumA=0.5189, HeliumB=0.9073),
-                tcCoefficients(name='13',
-                               NitrogenHT=305.00, HeliumHT=115.29,
-                               NitrogenA=0.2850, NitrogenB=0.9477,
-                               HeliumA=0.5181, HeliumB=0.9122),
-                tcCoefficients(name='14',
-                               NitrogenHT=390.00, HeliumHT=147.42,
-                               NitrogenA=0.2737, NitrogenB=0.9544,
-                               HeliumA=0.5176, HeliumB=0.9171),
-                tcCoefficients(name='15',
-                               NitrogenHT=498.00, HeliumHT=188.24,
-                               NitrogenA=0.2523, NitrogenB=0.9602,
-                               HeliumA=0.5172, HeliumB=0.9217),
-                tcCoefficients(name='16',
-                               NitrogenHT=635.00, HeliumHT=240.03,
-                               NitrogenA=0.2327, NitrogenB=0.9653,
-                               HeliumA=0.5119, HeliumB=0.9267),
+#NitrogenHT,HeliumHT,NitrogenA,NitrogenB,HeliumA,HeliumB
+5.00,1.88,1.1696,0.5578,1.6189,0.4770
+8.00,3.02,1.0000,0.6514,1.3830,0.5747
+12.50,4.72,0.8618,0.7222,1.1919,0.6527
+18.50,6.99,0.7562,0.7825,1.0458,0.7223
+27.00,10.21,0.6667,0.8126,0.9220,0.7582
+38.30,14.48,0.5600,0.8434,0.8205,0.7957
+54.30,20.53,0.4947,0.8693,0.7305,0.8279
+77.00,29.11,0.4500,0.8910,0.6502,0.8553
+109.00,41.20,0.4187,0.9092,0.5950,0.8757
+146.00,55.19,0.3798,0.9222,0.5545,0.8903
+187.00,70.69,0.3497,0.9319,0.5333,0.8997
+239.00,90.34,0.3223,0.9403,0.5189,0.9073
+305.00,115.29,0.2850,0.9477,0.5181,0.9122
+390.00,147.42,0.2737,0.9544,0.5176,0.9171
+498.00,188.24,0.2523,0.9602,0.5172,0.9217
+635.00,240.03,0.2327,0.9653,0.5119,0.9267
