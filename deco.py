@@ -122,13 +122,36 @@ def constant_depth(depth, t, tissues, ht):
     return tissues
 
 def GF_slope(first_stop):
+    """ Return the slope of M-line given the Gradient Factors. """
     return (GF_H - GF_L)/(last_deco_stop - first_stop)
 
 def GF(first_stop, current_depth):
+    """ Return the value of the GF-line given the current Depth. """
     slope = GF_slope(first_stop)
     return slope * current_depth + GF_H
 
-def check_ceiling(tissues, ht):
+def check_first_ceiling(tissues, ht):
+    all_ceil = []
+    for i in range(ht.shape[0]):
+    # Compute the A and B value as a weighted average of the A and B value of each inert gas
+        A = ((ht[i,2] * tissues[i,0]) + (ht[i,4] * tissues[i,1]))/tissues[i,2]
+        B = ((ht[i,3] * tissues[i,0]) + (ht[i,5] * tissues[i,1]))/tissues[i,2]
+        #ceil = (tissues[i,2] - A) * B # original equation without GF
+
+        ceil = (tissues[i,2] - GF_L*A) / ( GF_L / B - GF_L +1 )
+        ceil_in_m = (ceil - ATM_BAR)*10
+
+        # Round to next multiple of 3m
+        all_ceil.append(3 * round(ceil_in_m/3))
+
+    all_ceil = np.array(all_ceil)
+
+    if max(all_ceil) <= 0:
+        return 0
+    else:
+        return max(all_ceil)
+
+def check_ceiling(tissues, ht, first_stop):
     """ Compute the ceiling depth based on the Buhlmann A and B values and the inert gasses partial pressure """
 
     all_ceil = []
@@ -152,7 +175,7 @@ def check_ceiling(tissues, ht):
     else:
         return max(all_ceil)
 
-def length_of_deco(curr_stop, tissues, ht):
+def length_of_deco(first_stop, curr_stop, tissues, ht):
 
     # Compute all stops in steps of 3m
     all_stops = np.arange(curr_stop, last_deco_stop -3, -3)
@@ -163,7 +186,7 @@ def length_of_deco(curr_stop, tissues, ht):
 
     for i,stop in enumerate(all_stops[:-1]):
         stop_length = 0 
-        while((check_ceiling(tissues, ht) / 10 + 1) * ATM_BAR > all_stops[i+1]):
+        while((check_ceiling(tissues, ht, first_stop) / 10 + 1) * ATM_BAR > all_stops[i+1]):
             # Stay 1 min and update the inert gas partial pressure
             tissues = constant_depth(stop, 1.0, tissues, ht)
             stop_length += 1
@@ -173,7 +196,6 @@ def length_of_deco(curr_stop, tissues, ht):
     return 0
 
 def main():
-
     # Import half_times
     ht = np.loadtxt("half_times_ZH-L16b.csv", comments='#', delimiter=",")
     
@@ -184,16 +206,17 @@ def main():
 
     tissues = constant_ascent_descent(0, 40, 15, tissues, ht)
     tissues = constant_depth(40, 20, tissues, ht) 
-    ceil = check_ceiling(tissues, ht)
+    first_stop = check_first_ceiling(tissues, ht)
+    ceil = check_ceiling(tissues, ht, first_stop)
 
     if ceil == 0:
         print("No Deco")
     else:
         print("Ceiling: "+str(ceil)+" m")
-        length_of_deco(ceil, tissues, ht)
+        length_of_deco(first_stop, ceil, tissues, ht)
 
     tissues = constant_ascent_descent(40, 15, 15, tissues, ht)
-    ceil = check_ceiling(tissues, ht)
+    ceil = check_ceiling(tissues, ht, first_stop)
 
     if ceil == 0:
         print("No Deco")
