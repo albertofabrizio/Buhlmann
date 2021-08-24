@@ -8,15 +8,15 @@ from tools import Buhlmann as balgo
 parser = argparse.ArgumentParser(description='This program computes the decompression obligations based on the Buhlmann algorithm and IANTD standards.')
 
 #parser.add_argument('--rep', action='store_true', help="Wheter this is a repetitive dive.")
-parser.add_argument('--altitude', type=float, dest='h_on_sea', default=0.0, help="Altitude on sea-level for the dive [m]")
+parser.add_argument('--altitude', type=float, dest='h_on_sea', default=0.0, help="Altitude on sea-level for the dive [m] [default: 0.0]")
 parser.add_argument('--alveolar', type=str, dest='alveolar', default='buhl', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
 parser.add_argument('--depth', type=float, dest='tdepth', required=True, help="Target maximum depth [m]")
 parser.add_argument('--time', type=float, dest='runT', required=True, help="Run time [min] at which you desire to quit the target maximum depth.")
 parser.add_argument('--fn2', type=float, dest='fn2', required=True, help="Fraction of nitrogen in breathing gas.")
 parser.add_argument('--fhe', type=float, dest='fhe', required=True, help="Fraction of helium in breathing gas.")
-parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="Gradient factor (Low).")
-parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High).")
-parser.add_argument('--last', type=float, dest='last_deco', default='6', help="Last deco stop [m].")
+parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="Gradient factor (Low) [default: 0.75].")
+parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High) [default: 0.75].")
+parser.add_argument('--last', type=float, dest='last_deco', default='6', help="Last deco stop [m] [default: 6].")
 
 
 args = parser.parse_args()
