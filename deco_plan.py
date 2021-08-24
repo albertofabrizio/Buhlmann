@@ -155,9 +155,10 @@ class Compartments():
             self.compartments[comp_idx,1] = Constants.AirHelium
             self.compartments[comp_idx,2] = pTot
 
-        # Go to target depth
         if args.debug:
             self.print_comp()
+
+        # Go to target depth
         self.constant_speed(0, args.tdepth)
 
         if args.debug:
