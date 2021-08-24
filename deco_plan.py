@@ -153,7 +153,8 @@ class Compartments():
             self.compartments[comp_idx,1] = Constants.AirHelium
             self.compartments[comp_idx,2] = pTot
 
-        return self.compartments
+        # Go to target depth
+        self.constant_speed_ascent(0, args.tdepth)
 
     def constant_depth(self, depth, time):
 
@@ -335,9 +336,6 @@ def main():
     # Initialize all the tissues to air partial pressures.
     tissues = Compartments(params)
     tissues.initialize()
-
-    # Print initial pressure.
-    tissues.print_comp()
 
     # You could add the descent loading (especially for deeper dives), but to keep things simple let's assume instant depth...
     tissues.constant_depth(args.tdepth, args.runT)
