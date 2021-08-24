@@ -18,6 +18,7 @@ parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="G
 parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High).")
 parser.add_argument('--last', type=float, dest='last_deco', default='6', help="Last deco stop [m].")
 
+
 args = parser.parse_args()
 
 ########################## Helper Functions ######################## 
@@ -103,6 +104,8 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
+        self.speed_deep = 9
+        self.speed_shallow = 3
 
         self.compartments = np.zeros((16,3)) # Column are pN2, pHe and pInert
         self.fn2 = args.fn2
@@ -152,10 +155,6 @@ class Compartments():
 
         return self.compartments
 
-    def print_comp(self):
-        print(tabulate(self.compartments, headers=['pN2 [bar]', 'pHe [bar]', 'p_Inert [bar]']))
-
-
     def constant_depth(self, depth, time):
 
         self.d = convert_to_bar_Abs(depth)
@@ -178,6 +177,37 @@ class Compartments():
         # Once we know the saturation of the tissues, check the ascent ceiling
         self.check_ascent_ceiling()
 
+    def constant_speed_ascent(self, depth_i, depth_f):
+
+        d1 = convert_to_bar_Abs(depth_i)
+
+        for comp_idx in range(16):
+            p0_n2 = self.compartments[comp_idx,0]
+            p0_he = self.compartments[comp_idx,1]
+
+            pi0_n2 = (d1 - Constants.AlveolarWVP) * self.fn2
+            pi0_he = (d1 - Constants.AlveolarWVP) * self.fhe
+
+            if depth_i > 6:
+                RN2a = self.speed_deep * self.fn2
+                RHe = self.speed_deep * self.fhe
+                t = np.abs(depth_f-depth_i) / self.speed_deep
+            else:
+                RN2a = self.speed_shallow * self.fn2
+                RHe = self.speed_shallow * self.fhe
+                t = np.abs(depth_f-depth_i) / self.speed_deep
+
+            kN2 = np.log(2) / self.ht_n2[comp_idx]
+            kHe = np.log(2) / self.ht_he[comp_idx]
+            
+            pN2 = pi0_n2 + RN2a*(t - (1/kN2)) - (pi0_n2 - p0_n2 - (RN2a / kN2))* np.exp(-kN2*t)
+            pHe = pi0_he + RHe*(t - (1/kHe)) - (pi0_he - p0_he - (RHe / kHe))* np.exp(-kHe*t)
+
+            self.compartments[comp_idx,0] = pN2
+            self.compartments[comp_idx,1] = pHe
+            self.compartments[comp_idx,2] = pN2 + pHe
+
+
     def compute_GF(self):
 
         ''' 
@@ -188,6 +218,7 @@ class Compartments():
 
         env = Environment(args.h_on_sea)
         final_stop = env.altitude()
+        #final_stop = convert_to_bar_Abs(args.last_deco)
 
         self.GF = (self.d - final_stop)/(self.first_stop - final_stop) * (args.gf_low - args.gf_hi) + args.gf_hi
         
@@ -259,10 +290,17 @@ class Compartments():
 
         # ... and go to ceiling depth and stay there 1 min.
         if self.deco_stop > 0 :
+            self.constant_speed_ascent(self.d,self.deco_stop)
             self.constant_depth(self.deco_stop, 1)        
 
+    def print_comp(self):
+        """ Print the compartment saturation in a beautiful table. """
+
+        print("")
+        print(tabulate(self.compartments, headers=['pN2 [bar]', 'pHe [bar]', 'p_Inert [bar]']))
 
     def print_profile(self):
+        """ Print the computed dive profile in a beautiful table. """
         
         tmp = []
         
@@ -283,7 +321,6 @@ class Compartments():
                 else:
                     tmp.append([key, value])
 
-
         print("")
         print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]']))
 
@@ -300,7 +337,6 @@ def main():
     tissues.initialize()
 
     # Print initial pressure.
-    print("")
     tissues.print_comp()
 
     # You could add the descent loading (especially for deeper dives), but to keep things simple let's assume instant depth...
