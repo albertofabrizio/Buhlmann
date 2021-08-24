@@ -17,6 +17,7 @@ parser.add_argument('--fhe', type=float, dest='fhe', required=True, help="Fracti
 parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="Gradient factor (Low) [default: 0.75].")
 parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High) [default: 0.75].")
 parser.add_argument('--last', type=float, dest='last_deco', default='6', help="Last deco stop [m] [default: 6].")
+parser.add_argument('--debug', action='store_true', help="Print Debug Info.")
 
 
 args = parser.parse_args()
@@ -104,9 +105,9 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
-        self.speed_descent = 18
-        self.speed_deep = 9
-        self.speed_shallow = 3
+        self.speed_descent = convert_to_bar(20)
+        self.speed_deep = convert_to_bar(-9)
+        self.speed_shallow = convert_to_bar(-3)
 
         self.compartments = np.zeros((16,3)) # Column are pN2, pHe and pInert
         self.fn2 = args.fn2
@@ -155,7 +156,12 @@ class Compartments():
             self.compartments[comp_idx,2] = pTot
 
         # Go to target depth
-        self.constant_speed_ascent(0, args.tdepth)
+        if args.debug:
+            self.print_comp()
+        self.constant_speed(0, args.tdepth)
+
+        if args.debug:
+            self.print_comp()
 
     def constant_depth(self, depth, time):
 
@@ -176,12 +182,16 @@ class Compartments():
             self.compartments[comp_idx,1] = pHe
             self.compartments[comp_idx,2] = pN2 + pHe
 
+        if args.debug:
+            self.print_comp()
+
         # Once we know the saturation of the tissues, check the ascent ceiling
         self.check_ascent_ceiling()
 
-    def constant_speed_ascent(self, depth_i, depth_f):
+    def constant_speed(self, depth_i, depth_f):
 
         d1 = convert_to_bar_Abs(depth_i)
+        d2 = convert_to_bar_Abs(depth_f)
 
         for comp_idx in range(16):
             p0_n2 = self.compartments[comp_idx,0]
@@ -193,21 +203,21 @@ class Compartments():
             if depth_f > depth_i:
                 RN2a = self.speed_descent * self.fn2
                 RHe = self.speed_descent * self.fhe
-                t = np.abs(depth_f-depth_i) / self.speed_descent
+                t = (d2-d1) / self.speed_descent
 
             else: 
                 if np.abs(depth_f - depth_i) > 3:
                     RN2a = self.speed_deep * self.fn2
                     RHe = self.speed_deep * self.fhe
-                    t = np.abs(depth_f-depth_i) / self.speed_deep
+                    t = (d2-d1) / self.speed_deep
                 else:
                     RN2a = self.speed_shallow * self.fn2
                     RHe = self.speed_shallow * self.fhe
-                    t = np.abs(depth_f-depth_i) / self.speed_shallow
+                    t = (d2-d1) / self.speed_shallow
 
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
-            
+
             pN2 = pi0_n2 + RN2a*(t - (1/kN2)) - (pi0_n2 - p0_n2 - (RN2a / kN2))* np.exp(-kN2*t)
             pHe = pi0_he + RHe*(t - (1/kHe)) - (pi0_he - p0_he - (RHe / kHe))* np.exp(-kHe*t)
 
@@ -298,7 +308,7 @@ class Compartments():
 
         # ... and go to ceiling depth and stay there 1 min.
         if self.deco_stop > 0 :
-            self.constant_speed_ascent(self.d,self.deco_stop)
+            #self.constant_speed(self.d,self.deco_stop)
             self.constant_depth(self.deco_stop, 1)        
 
     def print_comp(self):
