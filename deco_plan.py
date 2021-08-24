@@ -104,6 +104,7 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
+        self.speed_descent = 18
         self.speed_deep = 9
         self.speed_shallow = 3
 
@@ -189,14 +190,20 @@ class Compartments():
             pi0_n2 = (d1 - Constants.AlveolarWVP) * self.fn2
             pi0_he = (d1 - Constants.AlveolarWVP) * self.fhe
 
-            if depth_i > 6:
-                RN2a = self.speed_deep * self.fn2
-                RHe = self.speed_deep * self.fhe
-                t = np.abs(depth_f-depth_i) / self.speed_deep
-            else:
-                RN2a = self.speed_shallow * self.fn2
-                RHe = self.speed_shallow * self.fhe
-                t = np.abs(depth_f-depth_i) / self.speed_deep
+            if depth_f > depth_i:
+                RN2a = self.speed_descent * self.fn2
+                RHe = self.speed_descent * self.fhe
+                t = np.abs(depth_f-depth_i) / self.speed_descent
+
+            else: 
+                if np.abs(depth_f - depth_i) > 3:
+                    RN2a = self.speed_deep * self.fn2
+                    RHe = self.speed_deep * self.fhe
+                    t = np.abs(depth_f-depth_i) / self.speed_deep
+                else:
+                    RN2a = self.speed_shallow * self.fn2
+                    RHe = self.speed_shallow * self.fhe
+                    t = np.abs(depth_f-depth_i) / self.speed_shallow
 
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
