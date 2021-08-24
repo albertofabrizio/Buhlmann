@@ -193,9 +193,12 @@ class Compartments():
         
 
     def compute_stop_in_m(self):
+        """ Converts the inert gas loading to ceiling stop and terminates the program if NDL is not reached. """
 
+        # Check among all tissues, which one has the highest loading.
         self.max_loading = np.max(self.ascent_ceil)
                 
+        # Convert the highest loading to a depth increment of 3 m.
         self.deco_stop = convert_to_depth_Abs(self.max_loading)
         self.deco_stop = 3 * round(self.deco_stop/3)
                 
@@ -204,6 +207,7 @@ class Compartments():
 
         self.deco_stops.append(self.deco_stop)
 
+        # Kill the program if there is no ceiling for the dive.
         if (len(self.deco_stops) == 1 and self.deco_stops[0] == 0.0):
             print("This is a dive within the NDL. Stop at:")
             print("9 m --- 1 min")
@@ -213,48 +217,56 @@ class Compartments():
 
 
     def check_ascent_ceiling(self):
-
+        """ Computes the ceiling depth given the current inert gas loading. """
         
-        # If it is not the first time we compute the ceiling... Then we need to know the GF for the current depth.
+        # If it is not the first time that we compute the ceiling... Then we need to know the GF for the current depth.
         if not self.first_stop_flag:
             self.compute_GF()
 
+        # For each compartment
         for comp_idx in range(16):
 
+            # Compute Buhlmann M-value line parameters A and B with both N2 and He
             A = ((self.a_n2[comp_idx] * self.compartments[comp_idx,0]) + (self.a_he[comp_idx] * self.compartments[comp_idx,1]))/(self.compartments[comp_idx,2])
             B = ((self.b_n2[comp_idx] * self.compartments[comp_idx,0]) + (self.b_he[comp_idx] * self.compartments[comp_idx,1]))/(self.compartments[comp_idx,2])
 
+            # If it is the first time that we compute the ceiling depth: use GF_low.
             if self.first_stop_flag:
                 self.ascent_ceil[comp_idx] = ((self.compartments[comp_idx,0]+self.compartments[comp_idx,1]) - args.gf_low * A) / ( args.gf_low/B - args.gf_low + 1)
-                
+            
+            # Otherwise use self.GF computed precendently.
             else:
                 self.ascent_ceil[comp_idx] = ((self.compartments[comp_idx,0]+self.compartments[comp_idx,1]) - self.GF * A) / ( self.GF/B - self.GF + 1)
 
+        # Convert pressures in meters and stop the program if the dive in within the NDL.
         self.compute_stop_in_m()
 
+        # We want our last deco to be at the user-selected depth.
         if (self.deco_stop < args.last_deco and self.deco_stop > 0):
             self.deco_stop = args.last_deco        
         
-        if (self.first_stop_flag):
-            
+        # If this was the first time that we computed ceil... we need to attribute the first_stop variable to draw the GF(depth) line.
+        if (self.first_stop_flag):    
             self.first_stop_flag = False
             self.first_stop = convert_to_bar_Abs(self.deco_stop)
 
+            # Also we need to initialize the dictionary that will contain all our deco stops.
             for depth in range(0,int(self.deco_stop)+1,3):
-                self.deco_profile[depth] = 0
-        
+                self.deco_profile[depth] = 0      
+
+        # Increment the dictionary for the deco stop of 1 min...
         self.deco_profile[int(self.deco_stop)] += 1
 
-        # Go to ceiling depth and stay there 1 min.
+        # ... and go to ceiling depth and stay there 1 min.
         if self.deco_stop > 0 :
-            self.constant_depth(self.deco_stop, 1)
+            self.constant_depth(self.deco_stop, 1)        
 
 
     def print_profile(self):
         
-        # Enforce IANTD standards.
         tmp = []
-
+        
+        # Enforce IANTD standards.
         if 9 not in self.deco_profile:
             self.deco_profile[9] = 1
 
@@ -272,13 +284,11 @@ class Compartments():
                     tmp.append([key, value])
 
 
-
         print("")
         print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]']))
 
 
-
-
+########################## Main ########################
 
 def main():
 
@@ -296,6 +306,7 @@ def main():
     # You could add the descent loading (especially for deeper dives), but to keep things simple let's assume instant depth...
     tissues.constant_depth(args.tdepth, args.runT)
 
+    # Print the deco profile
     tissues.print_profile()
 
 
