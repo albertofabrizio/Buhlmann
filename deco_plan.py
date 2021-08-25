@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description='This program computes the decompre
 
 #parser.add_argument('--rep', action='store_true', help="Wheter this is a repetitive dive.")
 parser.add_argument('--altitude', type=float, dest='h_on_sea', default=0.0, help="Altitude on sea-level for the dive [m] [default: 0.0]")
-parser.add_argument('--alveolar', type=str, dest='alveolar', default='buhl', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
+parser.add_argument('--alveolar', type=str, dest='alveolar', default='schrein', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
 parser.add_argument('--depth', type=float, dest='tdepth', required=True, help="Target maximum depth [m]")
 parser.add_argument('--time', type=float, dest='runT', required=True, help="Run time [min] at which you desire to quit the target maximum depth.")
 parser.add_argument('--fn2', type=float, dest='fn2', required=True, help="Fraction of nitrogen in breathing gas.")
@@ -115,9 +115,9 @@ class Compartments():
         self.ht_n2 = params[:,0]
         self.ht_he = params[:,1]
 
-        self.a_n2 = params[:,2]
+        self.a_n2 = params[:,2] #* Constants.surfacePressure
         self.b_n2 = params[:,3]
-        self.a_he = params[:,4]
+        self.a_he = params[:,4] #* Constants.surfacePressure
         self.b_he = params[:,5]
 
         self.ascent_ceil = np.zeros(16)
