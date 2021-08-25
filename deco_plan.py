@@ -105,7 +105,7 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
-        self.speed_descent = convert_to_bar(20)
+        self.speed_descent = convert_to_bar(18)
         self.speed_deep = convert_to_bar(-9)
         self.speed_shallow = convert_to_bar(-3)
 
@@ -201,13 +201,13 @@ class Compartments():
             pi0_n2 = (d1 - Constants.AlveolarWVP) * self.fn2
             pi0_he = (d1 - Constants.AlveolarWVP) * self.fhe
 
-            if depth_f > depth_i:
+            if (depth_f > depth_i):
                 RN2a = self.speed_descent * self.fn2
                 RHe = self.speed_descent * self.fhe
                 t = (d2-d1) / self.speed_descent
 
             else: 
-                if np.abs(depth_f - depth_i) > 3:
+                if (depth_f - depth_i < -3):
                     RN2a = self.speed_deep * self.fn2
                     RHe = self.speed_deep * self.fhe
                     t = (d2-d1) / self.speed_deep
@@ -215,7 +215,7 @@ class Compartments():
                     RN2a = self.speed_shallow * self.fn2
                     RHe = self.speed_shallow * self.fhe
                     t = (d2-d1) / self.speed_shallow
-
+                    
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
 
@@ -250,7 +250,7 @@ class Compartments():
                 
         # Convert the highest loading to a depth increment of 3 m.
         self.deco_stop = convert_to_depth_Abs(self.max_loading)
-        self.deco_stop = 3 * round(self.deco_stop/3)
+        self.deco_stop = 3 * np.round(self.deco_stop/3)
                 
         if self.deco_stop < 2:
             self.deco_stop = 0.0
@@ -308,8 +308,11 @@ class Compartments():
         self.deco_profile[int(self.deco_stop)] += 1
 
         # ... and go to ceiling depth and stay there 1 min.
+        current = round(convert_to_depth_Abs(self.d))
+        if current != self.deco_stop:
+            self.constant_speed(current,self.deco_stop)
+
         if self.deco_stop > 0 :
-            #self.constant_speed(self.d,self.deco_stop)
             self.constant_depth(self.deco_stop, 1)        
 
     def print_comp(self):
