@@ -352,7 +352,7 @@ class Compartments():
 def main():
 
     # Load the parameters
-    params = balgo.ZHL16c()
+    params = balgo.ZHL16c_1b()
     
     # Initialize all the tissues to air partial pressures.
     tissues = Compartments(params)
