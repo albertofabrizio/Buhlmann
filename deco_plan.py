@@ -1,6 +1,5 @@
 import argparse
 import numpy as np
-from numpy.lib.stride_tricks import as_strided
 from tabulate import tabulate
 from tools import Buhlmann as balgo
 
@@ -9,7 +8,7 @@ parser = argparse.ArgumentParser(description='This program computes the decompre
 
 #parser.add_argument('--rep', action='store_true', help="Wheter this is a repetitive dive.")
 parser.add_argument('--altitude', type=float, dest='h_on_sea', default=0.0, help="Altitude on sea-level for the dive [m] [default: 0.0]")
-parser.add_argument('--alveolar', type=str, dest='alveolar', default='schrein', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
+parser.add_argument('--alveolar', type=str, dest='alveolar', default='buhl', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
 parser.add_argument('--depth', type=float, dest='tdepth', required=True, help="Target maximum depth [m]")
 parser.add_argument('--time', type=float, dest='runT', required=True, help="Run time [min] at which you desire to quit the target maximum depth.")
 parser.add_argument('--fn2', type=float, dest='fn2', required=True, help="Fraction of nitrogen in breathing gas.")
@@ -105,7 +104,7 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
-        self.speed_descent = convert_to_bar(18)
+        self.speed_descent = convert_to_bar(20)
         self.speed_deep = convert_to_bar(-9)
         self.speed_shallow = convert_to_bar(-3)
 
@@ -250,7 +249,7 @@ class Compartments():
                 
         # Convert the highest loading to a depth increment of 3 m.
         self.deco_stop = convert_to_depth_Abs(self.max_loading)
-        self.deco_stop = 3 * np.round(self.deco_stop/3)
+        self.deco_stop = 3 * np.ceil(self.deco_stop/3)
                 
         if self.deco_stop < 2:
             self.deco_stop = 0.0
