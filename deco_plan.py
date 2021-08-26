@@ -308,7 +308,8 @@ class Compartments():
 
         # ... and go to ceiling depth and stay there 1 min.
         current = round(convert_to_depth_Abs(self.d))
-        if current != self.deco_stop:
+        
+        if current != int(self.deco_stop):
             self.constant_speed(current,self.deco_stop)
 
         if self.deco_stop > 0 :
