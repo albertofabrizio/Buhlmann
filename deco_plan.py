@@ -11,7 +11,7 @@ parser.add_argument('--altitude', type=float, dest='h_on_sea', default=0.0, help
 parser.add_argument('--alveolar', type=str, dest='alveolar', default='buhl', help="Which water vapor pressure in the lungs to use. ['buhl', 'schrein', 'navy']")
 parser.add_argument('--depth', type=float, dest='tdepth', required=True, help="Target maximum depth [m]")
 parser.add_argument('--time', type=float, dest='runT', required=True, help="Run time [min] at which you desire to quit the target maximum depth.")
-parser.add_argument('--fn2', type=float, dest='fn2', required=True, help="Fraction of nitrogen in breathing gas.")
+parser.add_argument('--fo2', type=float, dest='fo2', required=True, help="Fraction of oxygen in breathing gas.")
 parser.add_argument('--fhe', type=float, dest='fhe', required=True, help="Fraction of helium in breathing gas.")
 parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="Gradient factor (Low) [default: 0.75].")
 parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High) [default: 0.75].")
@@ -109,8 +109,8 @@ class Compartments():
         self.speed_shallow = convert_to_bar(-3)
 
         self.compartments = np.zeros((16,3)) # Column are pN2, pHe and pInert
-        self.fn2 = args.fn2
         self.fhe = args.fhe
+        self.fn2 = 1 - args.fo2 - args.fhe
         self.ht_n2 = params[:,0]
         self.ht_he = params[:,1]
 
