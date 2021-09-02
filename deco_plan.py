@@ -180,7 +180,7 @@ class Compartments():
         i = 0
         tmp_old = 2 # If tmp is bigger than 1.6, the argument of the if statement will be anyway False
         for fo2 in self.fo2:
-            tmp = 1.6 - self.d * fo2
+            tmp = 1.61325 - self.d * fo2
             if tmp >= 0 and tmp_old > tmp:
                 tmp_old = tmp
                 better = i                
@@ -329,17 +329,46 @@ class Compartments():
             for depth in range(0,int(self.deco_stop)+1,3):
                 self.deco_profile[depth] = 0      
 
-        # Increment the dictionary for the deco stop of 1 min...
-        self.deco_profile[int(self.deco_stop)] += 1
-
         # ... and go to ceiling depth and stay there 1 min.
         current = round(convert_to_depth_Abs(self.d))
         
         if current != int(self.deco_stop):
-            self.constant_speed(current,self.deco_stop)
+
+            # First check if you need to stop to switch gas
+            stop_press = convert_to_bar_Abs(self.deco_stop)
+
+            i = 0 
+            deco_gas_idx = self.current_gas
+            for gas in self.mod:
+                diff = gas - stop_press
+                if diff > 0:
+                    deco_gas_idx = i                    
+                i += 1
+
+            if deco_gas_idx != self.current_gas:
+                # Go to MOD of the gas 
+                self.deco_stop = round(convert_to_depth_Abs(self.mod[deco_gas_idx])/3)*3
+
+                if int(self.deco_stop) not in self.deco_profile:
+                    self.deco_profile[int(self.deco_stop)] = 2
+                    self.constant_speed(current,self.deco_stop)
+                    self.check_better_gas()
+                    self.constant_depth(self.deco_stop, 2)
+                    return
+                else:
+                    self.deco_profile[int(self.deco_stop)] += 1
+                    self.constant_speed(current,self.deco_stop)
+                    self.check_better_gas()
+                    self.constant_depth(self.deco_stop, 1)
+                    return 
+
+            else:
+                self.constant_speed(current,self.deco_stop)
 
         if self.deco_stop > 0 :
+            self.deco_profile[int(self.deco_stop)] += 1
             self.constant_depth(self.deco_stop, 1)        
+            
 
     def print_comp(self):
         """ Print the compartment saturation in a beautiful table. """
@@ -368,6 +397,13 @@ class Compartments():
 
                 else:
                     tmp.append([key, value])
+
+        # Remove all keys that are zero
+        i = 0
+        for key,value in tmp:
+            if value == 0:
+                del tmp[i]
+            i += 1
 
         print("")
         print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]']))
