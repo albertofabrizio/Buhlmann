@@ -23,10 +23,6 @@ args = parser.parse_args()
 
 ########################## Helper Functions ######################## 
 
-def convert_to_bar(depth):
-    bar =  float(depth) / 10.0
-    return bar
-
 def convert_to_depth_Abs(pressure):
     # Initialize environment conditions.
     env = Environment(args.h_on_sea)
@@ -104,13 +100,13 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
-        self.speed_descent = convert_to_bar(20)
-        self.speed_deep = convert_to_bar(-9)
-        self.speed_shallow = convert_to_bar(-3)
+        self.speed_descent = convert_to_bar_Abs(20)
+        self.speed_deep = convert_to_bar_Abs(9)
+        self.speed_shallow = convert_to_bar_Abs(3)
 
         self.compartments = np.zeros((16,3)) # Column are pN2, pHe and pInert
 
-        assert len(args.fo2) == len(args.fhe), "The list of Oxygen and Helium fraction does not have the same length."
+        assert len(args.fo2) == len(args.fhe), "The list of Oxygen and Helium fractions does not have the same length."
         self.fo2 = np.array(args.fo2)
         self.fhe = np.array(args.fhe)
         self.fn2 = np.ones_like(self.fo2) - self.fo2 - self.fhe
@@ -169,16 +165,13 @@ class Compartments():
         # Go to target depth
         self.constant_speed(0, args.tdepth)
 
-        if args.debug:
-            self.print_comp()
-
     def mod_o2(self):
         return np.divide(1.6,self.fo2)
 
     def check_better_gas(self):
 
         i = 0
-        tmp_old = 2 # If tmp is bigger than 1.6, the argument of the if statement will be anyway False
+        tmp_old = 2 # If tmp is bigger than 1.61325, the argument of the if statement will be anyway False
         for fo2 in self.fo2:
             tmp = 1.61325 - self.d * fo2
             if tmp >= 0 and tmp_old > tmp:
@@ -237,13 +230,13 @@ class Compartments():
 
             else: 
                 if (depth_f - depth_i < -3):
-                    RN2a = self.speed_deep * self.fn2[self.current_gas]
-                    RHe = self.speed_deep * self.fhe[self.current_gas]
-                    t = (d2-d1) / self.speed_deep
+                    RN2a = -self.speed_deep * self.fn2[self.current_gas]
+                    RHe = -self.speed_deep * self.fhe[self.current_gas]
+                    t = (d2-d1) / -self.speed_deep
                 else:
-                    RN2a = self.speed_shallow * self.fn2[self.current_gas]
-                    RHe = self.speed_shallow * self.fhe[self.current_gas]
-                    t = (d2-d1) / self.speed_shallow
+                    RN2a = -self.speed_shallow * self.fn2[self.current_gas]
+                    RHe = -self.speed_shallow * self.fhe[self.current_gas]
+                    t = (d2-d1) / -self.speed_shallow
                     
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
@@ -254,6 +247,9 @@ class Compartments():
             self.compartments[comp_idx,0] = pN2
             self.compartments[comp_idx,1] = pHe
             self.compartments[comp_idx,2] = pN2 + pHe
+
+        if args.debug:
+            self.print_comp()
 
 
     def compute_GF(self):
@@ -326,12 +322,13 @@ class Compartments():
             self.first_stop = convert_to_bar_Abs(self.deco_stop)
 
             # Also we need to initialize the dictionary that will contain all our deco stops.
-            for depth in range(0,int(self.deco_stop)+1,3):
-                self.deco_profile[depth] = 0      
+            for depth in range(0,int(args.tdepth)+1,3):
+                self.deco_profile[depth] = 0   
 
-        # ... and go to ceiling depth and stay there 1 min.
+        # First we need to know at which depth we are in [m]
         current = round(convert_to_depth_Abs(self.d))
-        
+
+        # If the current depth is not a deco stop... we need first to go there.
         if current != int(self.deco_stop):
 
             # First check if you need to stop to switch gas
@@ -345,29 +342,29 @@ class Compartments():
                     deco_gas_idx = i                    
                 i += 1
 
+            # If it is the case
             if deco_gas_idx != self.current_gas:
-                # Go to MOD of the gas 
+                # Go to MOD of the gas and stay there 2 minutes
+
                 self.deco_stop = round(convert_to_depth_Abs(self.mod[deco_gas_idx])/3)*3
 
-                if int(self.deco_stop) not in self.deco_profile:
-                    self.deco_profile[int(self.deco_stop)] = 2
-                    self.constant_speed(current,self.deco_stop)
-                    self.check_better_gas()
-                    self.constant_depth(self.deco_stop, 2)
-                    return
-                else:
-                    self.deco_profile[int(self.deco_stop)] += 1
-                    self.constant_speed(current,self.deco_stop)
-                    self.check_better_gas()
-                    self.constant_depth(self.deco_stop, 1)
-                    return 
+                self.deco_profile[int(self.deco_stop)] += 2
+                self.constant_speed(current,self.deco_stop)
+                self.check_better_gas()
+                # print(self.current_gas)
+                self.constant_depth(self.deco_stop, 2)
+                return
 
             else:
+                # We are already using the best gas and just go to the next ceiling
                 self.constant_speed(current,self.deco_stop)
 
+        # In all cases (whether you moved or not)... you need to stay at the ceiling depth
         if self.deco_stop > 0 :
+            # We stop there for a minute and update our compartments
             self.deco_profile[int(self.deco_stop)] += 1
             self.constant_depth(self.deco_stop, 1)        
+            return
             
 
     def print_comp(self):
@@ -382,28 +379,19 @@ class Compartments():
         tmp = []
         
         # Enforce IANTD standards.
-        if 9 not in self.deco_profile:
+        if self.deco_profile[9] < 1:
             self.deco_profile[9] = 1
+
+        if self.deco_profile[6] < 2:
+            self.deco_profile[6] = 2
+
+        if self.deco_profile[3] < 3:
+            self.deco_profile[3] = 3
 
         for key, value in self.deco_profile.items():
             if key > 0:
-                if key == 3:
-                    tmp.append([key, 3])
-                elif key == 6:
-                    if value < 2:
-                        tmp.append([key, 2])
-                    else:
-                        tmp.append([key, value])
-
-                else:
+                if value > 0 :
                     tmp.append([key, value])
-
-        # Remove all keys that are zero
-        i = 0
-        for key,value in tmp:
-            if value == 0:
-                del tmp[i]
-            i += 1
 
         print("")
         print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]']))
