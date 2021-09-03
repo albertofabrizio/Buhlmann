@@ -180,7 +180,7 @@ class Compartments():
             i+=1
 
         if better != self.current_gas:
-            print("Switching gas at a depth of: ", (self.d - self.palt)*10.0, " m for fO2 of: ", self.fo2[better])
+            print("Switching gas at a depth of:", np.round((self.d - self.palt)*10.0), "m for fO2 of: ", self.fo2[better])
             self.current_gas = better
 
     def constant_depth(self, depth, time):
