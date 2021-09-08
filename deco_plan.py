@@ -408,7 +408,7 @@ def main():
     tissues = Compartments(params)
     tissues.initialize()
 
-    # You could add the descent loading (especially for deeper dives), but to keep things simple let's assume instant depth...
+    # Stay at target depth for given bottom time
     tissues.constant_depth(args.tdepth, args.runT)
 
     # Print the deco profile
