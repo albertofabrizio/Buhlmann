@@ -1,5 +1,5 @@
-# Buhlmann
-This code is an implementation of the Buhlmann algorithm for decompression planning merged with IANTD standards. <br>
+# Bühlmann
+This code is an implementation of the Bühlmann algorithm for decompression planning merged with IANTD standards. <br>
 The decompression schedules predicted by this program are yet to be thoroughly tested in water. <br>
 <br>
 The author declines all responsability for any direct or indirect damage to objects, persons or animals deriving from the use of this program. <br>
