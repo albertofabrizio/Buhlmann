@@ -5,7 +5,7 @@ The decompression schedules predicted by this program are yet to be thoroughly t
 The author declines all responsability for any direct or indirect damage to objects, persons or animals deriving from the use of this program. <br>
 
 ## Authors
-[Dr. Alberto Fabrizio](https://github.com/albertofabrizio)
+[Dr. Alberto Fabrizio](https://www.linkedin.com/in/alberto-fabrizio-03151b207/)
 
 ## Requirements
 
@@ -13,23 +13,24 @@ The author declines all responsability for any direct or indirect damage to obje
 * `numpy >= 1.16`
 * `tabulate >= 0.8`
 
-##
-usage: python deco\_plan.py \[-h\] \[--altitude H\_ON\_SEA\] \[--alveolar ALVEOLAR\] --depth TDEPTH --time RUNT --fo2 FO2 \[FO2 ...\] --fhe FHE \[FHE ...\] \[--glow GF\_LOW\] \[--ghigh GF\_HI\] \[--last LAST\_DECO\] \[--debug\]
-
-This program computes the decompression obligations based on the Buhlmann algorithm and IANTD standards.
+## General usage and options
+Usage:
+```
+$python deco\_plan.py \[-h\] \[--altitude H\_ON\_SEA\] \[--alveolar ALVEOLAR\] --depth TDEPTH --time RUNT --fo2 FO2 \[FO2 ...\] --fhe FHE \[FHE ...\] \[--glow GF\_LOW\] \[--ghigh GF\_HI\] \[--last LAST\_DECO\] \[--debug\]
+```
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --altitude H\_ON\_SEA  Altitude on sea-level for the dive \[m\] \[default: 0.0\]
-  --alveolar ALVEOLAR  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\]
-  --depth TDEPTH       Target maximum depth \[m\]
-  --time RUNT          Run time [min] at which you desire to quit the target maximum depth.
-  --fo2 FO2 [FO2 ...]  Fractions of oxygen in breathing gas (one value per tank).
-  --fhe FHE [FHE ...]  Fractions of helium in breathing gas (one value per tank).
-  --glow GF\_LOW        Gradient factor (Low) [default: 0.75].
-  --ghigh GF\_HI        Gradient factor (High) [default: 0.75].
-  --last LAST\_DECO     Last deco stop \[m\] \[default: 6\].
-  --debug              Print Debug Info.
+  -h, --help           show this help message and exit <br>
+  --altitude H\_ON\_SEA  Altitude on sea-level for the dive \[m\] \[default: 0.0\] <br>
+  --alveolar ALVEOLAR  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\] <br>
+  --depth TDEPTH       Target maximum depth \[m\] <br>
+  --time RUNT          Run time [min] at which you desire to quit the target maximum depth. <br>
+  --fo2 FO2 [FO2 ...]  Fractions of oxygen in breathing gas (one value per tank). <br>
+  --fhe FHE [FHE ...]  Fractions of helium in breathing gas (one value per tank). <br>
+  --glow GF\_LOW        Gradient factor (Low) [default: 0.75]. <br>
+  --ghigh GF\_HI        Gradient factor (High) [default: 0.75]. <br>
+  --last LAST\_DECO     Last deco stop \[m\] \[default: 6\]. <br>
+  --debug              Print Debug Info. <br>
 
 
 ## Examples of usage:
