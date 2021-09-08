@@ -16,7 +16,7 @@ The author declines all responsability for any direct or indirect damage to obje
 ## General usage and options
 Usage:
 ```
-$python deco\_plan.py \[-h\] \[--altitude H\_ON\_SEA\] \[--alveolar ALVEOLAR\] --depth TDEPTH --time RUNT --fo2 FO2 \[FO2 ...\] --fhe FHE \[FHE ...\] \[--glow GF\_LOW\] \[--ghigh GF\_HI\] \[--last LAST\_DECO\] \[--debug\]
+$python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
 ```
 
 optional arguments:
