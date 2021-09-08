@@ -19,7 +19,7 @@ Usage:
 $python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
 ```
 
-optional arguments:
+optional arguments: <br>
   -h, --help           show this help message and exit <br>
   --altitude H\_ON\_SEA  Altitude on sea-level for the dive \[m\] \[default: 0.0\] <br>
   --alveolar ALVEOLAR  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\] <br>
