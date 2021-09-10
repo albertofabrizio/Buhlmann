@@ -60,31 +60,31 @@ Dive at 40 m for 25 min bottom time carrying only air as a gas.
 $ python deco_plan.py --depth 40 --time 25 --fo2 0.21 --fhe 0.0
 ```
 
-Dive at 40 m for 25 min bottom time carrying air and EANx50.
+Dive at 40 m for 25 min bottom time carrying air and EAN50.
 
 ```
 $ python deco_plan.py --depth 40 --time 25 --fo2 0.21 0.5 --fhe 0.0 0.0
 ```
 
-Dive at 40 m for 25 min bottom time carrying air and EANx50 with custom gradient factors.
+Dive at 40 m for 25 min bottom time carrying air and EAN50 with custom gradient factors.
 
 ```
 $ python deco_plan.py --depth 40 --time 25 --fo2 0.21 0.5 --fhe 0.0 0.0 --glow 0.35 --ghigh 0.75
 ```
 
-Dive at 40 m for 25 min bottom time carrying air and EANx50 with custom gradient factors at a altitude of 1000 m a.s.l.
+Dive at 40 m for 25 min bottom time carrying air and EAN50 with custom gradient factors at a altitude of 1000 m a.s.l.
 
 ```
 $ python deco_plan.py --depth 40 --time 25 --fo2 0.21 0.5 --fhe 0.0 0.0 --glow 0.35 --ghigh 0.75 --altitude 1000
 ```
 
-Dive at 50 m for 25 min bottom time carrying 20/45 trimix and EANx50
+Dive at 50 m for 25 min bottom time carrying 20/45 trimix and EAN50
 
 ```
 $ python deco_plan.py --depth 50 --time 25 --fo2 0.20 0.5 --fhe 0.45 0.0 
 ```
 
-Dive at 50 m for 25 min bottom time carrying 20/45 trimix and EANx50 with last stop at 3 m
+Dive at 50 m for 25 min bottom time carrying 20/45 trimix and EAN50 with last stop at 3 m
 
 
 ```
