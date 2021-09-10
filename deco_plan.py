@@ -415,7 +415,7 @@ class Compartments():
         
 
         print("")
-        print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]', 'Volume Gas [l/min]']))
+        print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]', 'Volume Gas [l]']))
 
         
 
