@@ -33,8 +33,22 @@ optional arguments: <br>
   --last LAST\_DECO     Last deco stop \[m\] \[default: 6\]. <br>
   --debug              Print Debug Info. <br>
 
+## Tools
 
-## Examples of usage:
+* `deco_find_tmax.sh`
+
+Usage:
+```
+$./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSafetyPressure
+```
+optional arguments: <br>
+ -d Depth [m]
+ -p Twinset total pressure [bar]
+ -s Twinset total volume [l]
+ -m Minimum allowed twinset pressure [bar]
+
+
+## Examples of usage of deco\_plan.py:
 
 Dive at 40 m for 25 min bottom time carrying only air as a gas.
 
