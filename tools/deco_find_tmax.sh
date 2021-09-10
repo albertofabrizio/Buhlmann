@@ -46,7 +46,7 @@ echo "Computing maximum time at depth $depth m, assuming loss of decompression s
 i=1
 while :
 do
-    python ../deco_plan.py --depth $depth --time $i  --fo2 0.21 --fhe 0.0 > tmp
+    python deco_plan.py --depth $depth --time $i  --fo2 0.21 --fhe 0.0 > tmp
     tot_gas=`awk '/Depth /,0' tmp  | tail -n +3 | awk '{print $3}' | awk '{sum += $1} END {printf "%10.0f\n", sum}'`
     
     if [[ $tot_gas -gt $liters_safe ]]; then
@@ -65,3 +65,6 @@ echo $answer
 
 echo "Estimated remaining gas upon surfacing $remain_gas l or $remain_pressure bar."
 
+if [ -z tmp ]; then
+    rm tmp
+fi
