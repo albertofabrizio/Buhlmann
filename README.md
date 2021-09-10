@@ -45,7 +45,7 @@ $ ./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSa
 ```
 optional arguments: <br>
 <br>
- -h, --help show this help message and exit
+ -h, --help show this help message and exit <br>
  -d Depth [m] <br>
  -p Twinset total pressure [bar] <br>
  -s Twinset total volume [l] <br>
