@@ -101,9 +101,9 @@ class Compartments():
     def __init__(self, params):
 
         self.d = Constants.surfacePressure 
-        self.speed_descent = convert_to_bar_Abs(20)
-        self.speed_deep = convert_to_bar_Abs(9)
-        self.speed_shallow = convert_to_bar_Abs(3)
+        self.speed_descent = 20 / 10.0
+        self.speed_deep = 9 / 10.0
+        self.speed_shallow = 3 / 10.0
 
         self.compartments = np.zeros((16,3)) # Column are pN2, pHe and pInert
 
@@ -377,8 +377,13 @@ class Compartments():
                 if value > 0 :
                     self.volume.append(self.sac * convert_to_bar_Abs(key) * value)
 
+        # Compute the gas needed for descent
+        time_descent = np.abs(convert_to_bar_Abs(args.tdepth)- convert_to_bar_Abs(0)) / self.speed_descent
+        desc_gas = self.sac * (convert_to_bar_Abs(args.tdepth) + convert_to_bar_Abs(0)) / 2 * time_descent
+
         # Compute the gas needed for bottom time at max depth
-        self.volume.append(self.sac * convert_to_bar_Abs(args.tdepth) * args.runT)
+        bottom_gas = self.sac * convert_to_bar_Abs(args.tdepth) * args.runT
+        self.volume.append(desc_gas + bottom_gas)
             
 
     def print_comp(self):
