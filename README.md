@@ -12,14 +12,16 @@ The author declines all responsability for any direct or indirect damage to obje
 * `python >= 3.6`
 * `numpy >= 1.16`
 * `tabulate >= 0.8`
+* `bash >= 5.0.3`
 
 ## General usage and options
 Usage:
 ```
-$python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--SAC SAC] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
+$ python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--SAC SAC] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
 ```
 
 optional arguments: <br>
+<br>
   -h, --help           show this help message and exit <br>
   --altitude H\_ON\_SEA  Altitude on sea-level for the dive \[m\] \[default: 0.0\] <br>
   --alveolar ALVEOLAR  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\] <br>
@@ -39,9 +41,10 @@ optional arguments: <br>
 
 Usage:
 ```
-$./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSafetyPressure
+$ ./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSafetyPressure
 ```
 optional arguments: <br>
+<br>
  -d Depth [m] <br>
  -p Twinset total pressure [bar] <br>
  -s Twinset total volume [l] <br>
