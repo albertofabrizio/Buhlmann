@@ -16,7 +16,7 @@ The author declines all responsability for any direct or indirect damage to obje
 ## General usage and options
 Usage:
 ```
-$python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
+$python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth TDEPTH --time RUNT --fo2 FO2 [FO2 ...] --fhe FHE [FHE ...] [--SAC SAC] [--glow GF_LOW] [--ghigh GF_HI] [--last LAST_DECO] [--debug]
 ```
 
 optional arguments: <br>
@@ -27,6 +27,7 @@ optional arguments: <br>
   --time RUNT          Run time [min] at which you desire to quit the target maximum depth. <br>
   --fo2 FO2 [FO2 ...]  Fractions of oxygen in breathing gas (one value per tank). <br>
   --fhe FHE [FHE ...]  Fractions of helium in breathing gas (one value per tank). <br>
+  --SAC SAC            Surface air consumption \[l/min\] \[default: 20\]. <br>
   --glow GF\_LOW        Gradient factor (Low) [default: 0.75]. <br>
   --ghigh GF\_HI        Gradient factor (High) [default: 0.75]. <br>
   --last LAST\_DECO     Last deco stop \[m\] \[default: 6\]. <br>
@@ -71,11 +72,4 @@ Dive at 50 m for 25 min bottom time carrying 20/45 trimix and EANx50 with last s
 ```
 $ python deco_plan.py --depth 50 --time 25 --fo2 0.20 0.5 --fhe 0.45 0.0 --last 3
 ```
-
-
-
-
-
-
-
 
