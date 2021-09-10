@@ -65,6 +65,6 @@ echo $answer
 
 echo "Estimated remaining gas upon surfacing $remain_gas l or $remain_pressure bar."
 
-if [ -z tmp ]; then
+if [ ! -z tmp ]; then
     rm tmp
 fi
