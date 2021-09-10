@@ -23,17 +23,17 @@ $ python deco_plan.py [-h] [--altitude H_ON_SEA] [--alveolar ALVEOLAR] --depth T
 optional arguments: <br>
 <br>
   -h, --help           show this help message and exit <br>
-  --altitude H\_ON\_SEA  Altitude on sea-level for the dive \[m\] \[default: 0.0\] <br>
-  --alveolar ALVEOLAR  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\] <br>
-  --depth TDEPTH       Target maximum depth \[m\] <br>
-  --time RUNT          Run time [min] at which you desire to quit the target maximum depth. <br>
-  --fo2 FO2 [FO2 ...]  Fractions of oxygen in breathing gas (one value per tank). <br>
-  --fhe FHE [FHE ...]  Fractions of helium in breathing gas (one value per tank). <br>
-  --SAC SAC            Surface air consumption \[l/min\] \[default: 20\]. <br>
-  --glow GF\_LOW        Gradient factor (Low) [default: 0.75]. <br>
-  --ghigh GF\_HI        Gradient factor (High) [default: 0.75]. <br>
-  --last LAST\_DECO     Last deco stop \[m\] \[default: 6\]. <br>
-  --debug              Print Debug Info. <br>
+  --altitude  Altitude on sea-level for the dive \[m\] \[default: 0.0\] <br>
+  --alveolar  Which water vapor pressure in the lungs to use. \['buhl', 'schrein', 'navy'\] <br>
+  --depth  Target maximum depth \[m\] <br>
+  --time Run time [min] at which you desire to quit the target maximum depth. <br>
+  --fo2 Fractions of oxygen in breathing gas (one value per tank). <br>
+  --fhe Fractions of helium in breathing gas (one value per tank). <br>
+  --SAC Surface air consumption \[l/min\] \[default: 20\]. <br>
+  --glow Gradient factor (Low) [default: 0.75]. <br>
+  --ghigh Gradient factor (High) [default: 0.75]. <br>
+  --last Last deco stop \[m\] \[default: 6\]. <br>
+  --debug Print Debug Info. <br>
 
 ## Tools
 
@@ -45,6 +45,7 @@ $ ./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSa
 ```
 optional arguments: <br>
 <br>
+ -h, --help show this help message and exit
  -d Depth [m] <br>
  -p Twinset total pressure [bar] <br>
  -s Twinset total volume [l] <br>
