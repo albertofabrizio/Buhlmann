@@ -42,13 +42,13 @@ Usage:
 $./tools/deco_find_tmax.sh  -d DEPTH -p TankPressure -s TankVolume -m MinimumSafetyPressure
 ```
 optional arguments: <br>
- -d Depth [m]
- -p Twinset total pressure [bar]
- -s Twinset total volume [l]
- -m Minimum allowed twinset pressure [bar]
+ -d Depth [m] <br>
+ -p Twinset total pressure [bar] <br>
+ -s Twinset total volume [l] <br>
+ -m Minimum allowed twinset pressure [bar] <br>
 
 
-## Examples of usage of deco\_plan.py:
+## Examples of usage:
 
 Dive at 40 m for 25 min bottom time carrying only air as a gas.
 
