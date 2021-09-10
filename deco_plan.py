@@ -13,6 +13,7 @@ parser.add_argument('--depth', type=float, dest='tdepth', required=True, help="T
 parser.add_argument('--time', type=float, dest='runT', required=True, help="Run time [min] at which you desire to quit the target maximum depth.")
 parser.add_argument('--fo2', type=float, dest='fo2', required=True, nargs='+', help="Fractions of oxygen in breathing gas (one value per tank).")
 parser.add_argument('--fhe', type=float, dest='fhe', required=True, nargs='+', help="Fractions of helium in breathing gas (one value per tank).")
+parser.add_argument('--SAC', type=float, dest='sac', default='20', help="Surface air consumption [l/min] [default: 20].")
 parser.add_argument('--glow', type=float, dest='gf_low', default='0.75', help="Gradient factor (Low) [default: 0.75].")
 parser.add_argument('--ghigh', type=float, dest='gf_hi', default='0.75', help="Gradient factor (High) [default: 0.75].")
 parser.add_argument('--last', type=float, dest='last_deco', default='6', help="Last deco stop [m] [default: 6].")
@@ -126,6 +127,8 @@ class Compartments():
         self.deco_stop = 0
         self.deco_stops = []
         self.max_loading = 0
+        self.sac = args.sac
+        self.volume = []
 
         self.GF = 1.0
         self.first_stop = 0.0
@@ -365,6 +368,17 @@ class Compartments():
             self.deco_profile[int(self.deco_stop)] += 1
             self.constant_depth(self.deco_stop, 1)        
             return
+
+    def compute_needed_volume(self):
+        
+        # Add the volume needed for deco
+        for key, value in self.deco_profile.items():
+            if key > 0:
+                if value > 0 :
+                    self.volume.append(self.sac * convert_to_bar_Abs(key) * value)
+
+        # Compute the gas needed for bottom time at max depth
+        self.volume.append(self.sac * convert_to_bar_Abs(args.tdepth) * args.runT)
             
 
     def print_comp(self):
@@ -388,13 +402,22 @@ class Compartments():
         if self.deco_profile[3] < 3:
             self.deco_profile[3] = 3
 
+        self.compute_needed_volume()
+
+        i=0
         for key, value in self.deco_profile.items():
             if key > 0:
                 if value > 0 :
-                    tmp.append([key, value])
+                    tmp.append([key, value, round(self.volume[i],3)])
+                    i+=1
+
+        tmp.append([args.tdepth, args.runT, round(self.volume[-1],3)])
+        
 
         print("")
-        print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]']))
+        print(tabulate(tmp, headers=['Depth [m]', 'Stop [min]', 'Volume Gas [l/min]']))
+
+        
 
 
 ########################## Main ########################
