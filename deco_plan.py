@@ -175,7 +175,7 @@ class Compartments():
 
         test = (newHe - oldHe) * 100 / 5
 
-        if np.abs(test) < (newN2 - oldN2) * 100 and (newN2 - oldN2) > 0 and test < 0:
+        if np.round(np.abs(test),1) < np.round((newN2 - oldN2) * 100, 1) and np.round((newN2 - oldN2),1) > 0 and np.round(test,1) < 0:
             print("Warning: the increase in N2 content exceeds 5 times the decrease in He. Possible ICD warning.")
             print("N2 Increase:", np.round((newN2 - oldN2) * 100,1),"%")
             print("He Decrease:", np.round((newHe - oldHe) * 100,1),"%")
