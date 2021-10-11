@@ -171,6 +171,15 @@ class Compartments():
     def mod_o2(self):
         return np.divide(1.6,self.fo2)
 
+    def isobaric_CD_ratio(self, oldN2, newN2, oldHe, newHe):
+
+        test = (newHe - oldHe) * 100 / 5
+
+        if np.abs(test) < (newN2 - oldN2) * 100 and (newN2 - oldN2) > 0 and test < 0:
+            print("Warning: the increase in N2 content exceeds 5 times the decrease in He. Possible ICD warning.")
+            print("N2 Increase:", np.round((newN2 - oldN2) * 100,1),"%")
+            print("He Decrease:", np.round((newHe - oldHe) * 100,1),"%")
+
     def check_better_gas(self):
 
         i = 0
@@ -184,6 +193,11 @@ class Compartments():
 
         if better != self.current_gas:
             print("Switching gas at a depth of:", np.round((self.d - self.palt)*10.0), "m for fO2 of: ", self.fo2[better])
+
+            # If there is Helium in the old mix check for ICD ratio upon switch.
+            if self.fhe[self.current_gas] != 0:
+                self.isobaric_CD_ratio(self.fn2[self.current_gas], self.fn2[better], self.fhe[self.current_gas], self.fhe[better])
+
             self.current_gas = better
 
     def constant_depth(self, depth, time):
@@ -413,10 +427,10 @@ class Compartments():
         for key, value in self.deco_profile.items():
             if key > 0:
                 if value > 0 :
-                    tmp.append([key, value, round(self.volume[i],3)])
+                    tmp.append([key, value, "{0:.2f}".format(self.volume[i])])
                     i+=1
 
-        tmp.append([args.tdepth, args.runT, round(self.volume[-1],3)])
+        tmp.append([args.tdepth, args.runT, "{0:.2f}".format(self.volume[-1],3)])
         
 
         print("")
