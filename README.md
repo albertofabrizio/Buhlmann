@@ -51,6 +51,29 @@ optional arguments: <br>
  -s Twinset total volume [l] <br>
  -m Minimum allowed twinset pressure [bar] <br>
 
+* `simple_blend_calc.py`
+
+Usage: 
+```
+$ python simple_blend_calc.py [-h] [--init_press P_INIT] [--ifo2 FO2] [--ifhe FHE] --addfo2 AFO2 [AFO2 ...] --addfhe AFHE [AFHE ...] --add_press P_ADD [P_ADD ...]
+                            [--mod MOD] --tdepth TDEPTH
+```
+
+This simple program computes the final mix, M.O.D, E.A.D., and the E.N.D. given a starting blend and the additional gasses. <br>
+
+optional arguments: <br>
+<br>
+  -h, --help            show this help message and exit <br>
+  --init\_press P\_INIT   Initial pressure in the tank \[bar\] (default = 0 bar, empty tank). <br>
+  --ifo2 FO2            Initial fraction of oxygen in the tank (default = 0.0). <br>
+  --ifhe FHE            Initial fraction of helium in the tank (default = 0.0). <br>
+  --addfo2 AFO2 [...]   Fraction(s) of oxygen in the added gas(es). <br>
+  --addfhe AFHE [...]   Fraction(s) of helium in the added gas(es). <br>
+  --add\_press P\_ADD [...] Pressure(s) of the added gas(es)\[bar\]. <br>
+  --mod MOD             User defined ppO2 at maximum operating depth \[bar\] (default = 1.4 bar). <br>
+  --tdepth TDEPTH       Target depth below surface \[m\]. <br>
+
+
 
 ## Examples of usage:
 
