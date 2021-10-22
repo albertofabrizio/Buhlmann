@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 
 ########################## Parsing user defined input ##########################
-parser = argparse.ArgumentParser(description='This simple program computes the final mix, E.A.D. and the E.N.D. given a starting blend and the additional gasses.')
+parser = argparse.ArgumentParser(description='This simple program computes the final mix, M.O.D, E.A.D., and the E.N.D. given a starting blend and the additional gasses.')
 
 parser.add_argument('--init_press', type=int, dest='p_init', default=0, help="Initial pressure in the tank [bar].")
 parser.add_argument('--ifo2', type=float, dest='fo2', default=0.0, help="Initial fraction of oxygen in the tank.")
@@ -72,6 +72,9 @@ def compute_EAD(blend, tod):
 ########################## Main ########################
 
 def main():
+    
+    if args.fo2 == 0.0 and args.fhe == 0.0 and args.p_init !=0:
+        print("Warning: Initial tank is filled up to ",args.p_init,"bar, with pure N2.")
 
     # Compute the final blend
     blend = np.zeros(3)
