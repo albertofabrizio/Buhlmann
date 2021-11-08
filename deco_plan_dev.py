@@ -542,6 +542,8 @@ class Compartments():
                     self.dive_profile["G"].append(self.gas_labels[self.current_gas])
                     self.dive_profile["V"].append(self.gas_consumed_deco)
                     
+                    self.start = self.run
+                    
                     self.ascent_shallow(self.current_deco_stop)
                     
                     stop_min = 0
@@ -605,6 +607,17 @@ class Compartments():
         # If not go there
         if self.current_deco_stop != int(np.round(self.convert_to_depth(d2))):
             self.ascent_shallow(self.current_deco_stop)
+
+        # Compute gas consumed
+        gas_consumed = self.sac * ((d1+d2)/2)/ self.palt * t
+
+        # Update dive profile
+        self.dive_profile["D"].append(str(round(self.convert_to_depth(d1)))+" -> "+str(round(self.convert_to_depth(d2))))
+        self.dive_profile["T"].append(self.start)
+        self.dive_profile["R"].append(self.run)
+        self.dive_profile["S"].append("-")
+        self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+        self.dive_profile["V"].append(gas_consumed)
 
     def constant_depth_deco(self):
 
