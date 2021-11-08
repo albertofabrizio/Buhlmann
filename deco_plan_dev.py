@@ -177,7 +177,8 @@ class Compartments():
         print(tabulate(self.compartments, headers=['pN2 [bar]', 'pHe [bar]', 'p_Inert [bar]']))
 
     def print_profile(self):
-        print(self.dive_profile)
+        print("")
+        print(tabulate(self.dive_profile, headers=['Depth [m]', 'Time [min]', 'Run [min]', 'Stop [min]', 'Gas [O2/He]', 'Volume Gas [l]']))
 
 ########################## Main Deco Algorithm ######################## 
 
