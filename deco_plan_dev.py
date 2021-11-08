@@ -123,8 +123,6 @@ class Compartments():
         # Set SAC and gas volume list
         self.sac = args.sac
         self.gas_consumed_ascent_deep = 0
-        self.gas_consumed_deco = 0
-        self.volume = []
 
         # Set global ceiling arrays
         self.ascent_ceil_bar = np.zeros(16)
@@ -133,14 +131,14 @@ class Compartments():
 
         # Time
         self.run = 0
-        self.runTable = [0.0]
-        
-        
+        self.start = 0
+        self.start_depth = 0
+
+        # Gradient factors        
         self.GF = 1.0
         self.first_stop = 0.0
-        self.first_stop_flag = True
 
-        self.deco_profile = {}
+        self.dive_profile = {"D":[], "T":[], "R":[], "S":[], "G":[], "V":[]}
 
 ########################## Helper Functions ######################## 
 
@@ -177,6 +175,9 @@ class Compartments():
 
         print("")
         print(tabulate(self.compartments, headers=['pN2 [bar]', 'pHe [bar]', 'p_Inert [bar]']))
+
+    def print_profile(self):
+        print(self.dive_profile)
 
 ########################## Main Deco Algorithm ######################## 
 
@@ -246,11 +247,9 @@ class Compartments():
 
         # Add descent to runtime
         self.run += t
-        self.runTable.append(self.run)
-        
+
         # Compute gas needed for descent
         gas_consumed = self.sac * ((d1+d2)/2)/ self.palt * t
-        self.volume.append(gas_consumed)
 
         # Print Debug info
 
@@ -268,6 +267,16 @@ class Compartments():
             print("Saturation of Tissue Compartments:")
             self.print_comp()
             print("****************** Descent ******************")
+
+        # Update Dive Profile
+        self.dive_profile["D"].append(str(depth_i)+" -> "+str(depth_f))
+        self.dive_profile["T"].append(self.start)
+        self.dive_profile["R"].append(self.run)
+        self.dive_profile["S"].append("-")
+        self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+        self.dive_profile["V"].append(gas_consumed)
+
+        self.start = self.run
 
         # Now that we are at depth... Stay there
         self.constant_depth_bottom(args.tdepth, args.runT)
@@ -302,14 +311,11 @@ class Compartments():
 
         # Add descent to runtime
         self.run += time
-        self.runTable.append(self.run)
-        
+
         # Compute gas needed for descent
         gas_consumed = self.sac * self.d/ self.palt * time
-        self.volume.append(gas_consumed)
 
         # Print Debug info
-
         if args.debug:
             print("")
             print("****************** Bottom ******************")
@@ -323,7 +329,18 @@ class Compartments():
             self.print_comp()
             print("****************** Bottom ******************")
 
+        # Update Dive Profile
+        self.dive_profile["D"].append(str(depth))
+        self.dive_profile["T"].append(self.start)
+        self.dive_profile["R"].append(self.run)
+        self.dive_profile["S"].append(self.run - self.start)
+        self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+        self.dive_profile["V"].append(gas_consumed)
+
+
         # Once we know the saturation of the tissues, check the ascent ceiling
+        self.start = self.run
+        self.start_depth = self.d
         self.check_ascent_ceiling_first()
 
     def check_ascent_ceiling_first(self):
@@ -442,7 +459,18 @@ class Compartments():
             self.ascent_deep(self.current_deco_stop)
 
         else:     
-            # OK, now we are at a stable ceiling... go into the deco loop!
+            # Update dive profile
+            self.dive_profile["D"].append(str(round(self.convert_to_depth(self.start_depth)))+" -> "+str(round(self.convert_to_depth(d2))))
+            self.dive_profile["T"].append(self.start)
+            self.dive_profile["R"].append(self.run)
+            self.dive_profile["S"].append("-")
+            self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+            self.dive_profile["V"].append(self.gas_consumed_ascent_deep)
+
+            self.start = self.run
+            self.start_depth = round(self.convert_to_depth(d2))
+
+            # and, OK, now we are at a stable ceiling... go into the deco loop!
             self.deco()
 
     def check_ascent_ceiling(self):
@@ -486,18 +514,35 @@ class Compartments():
         if args.debug:
             print("****************** DECO PART! ******************")
 
+        stop_min = 0
+        self.gas_consumed_deco = 0
+
         while True:
             if self.current_deco_stop == 0:
                 break
             else:
                 # Stay 1 min at ceiling
                 self.constant_depth_deco()
+                stop_min += 1
 
                 # Check deco
                 self.check_ascent_ceiling()
 
                 if self.current_deco_stop != int(np.round(self.convert_to_depth(self.d))):
+                    
+                    # Update dive profile
+                    self.dive_profile["D"].append(str(round(self.convert_to_depth(self.d))))
+                    self.dive_profile["T"].append(self.start)
+                    self.dive_profile["R"].append(self.run)
+                    self.dive_profile["S"].append(stop_min)
+                    self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+                    self.dive_profile["V"].append(self.gas_consumed_deco)
+                    
                     self.ascent_shallow(self.current_deco_stop)
+                    
+                    stop_min = 0
+                    self.start = self.run
+                    self.gas_consumed_deco = 0
                 else:
                     continue
 
@@ -579,9 +624,8 @@ class Compartments():
         # Add descent to runtime
         self.run += time
         
-        # Compute gas needed for descent
-        self.gas_consumed_deco += self.sac * self.d/ self.palt * time
-
+        # Compute gas needed for deco
+        self.gas_consumed_deco += self.sac * self.d / self.palt * time
 
 ########################## Main ########################
 
@@ -594,6 +638,8 @@ def main():
     tissues = Compartments(params)
     tissues.initialize()
 
+    # Print dive profile on screen
+    tissues.print_profile()
 
 if __name__ == "__main__":
     main()
