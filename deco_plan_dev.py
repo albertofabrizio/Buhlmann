@@ -234,7 +234,9 @@ class Compartments():
 
             RN2a = self.speed_descent * self.fn2[self.current_gas]
             RHe = self.speed_descent * self.fhe[self.current_gas]
-            t = (d2-d1) / self.speed_descent
+
+            # The np.ceil is my choice ... I could leave it as a fraction but I prefer to approximate to the highest integer (Conservatism).
+            t = np.ceil((d2-d1) / self.speed_descent)
                     
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
@@ -414,7 +416,8 @@ class Compartments():
 
             RN2a = speed * self.fn2[self.current_gas]
             RHe = speed * self.fhe[self.current_gas]
-            t = (d2-d1) / speed
+            # The np.ceil is my choice ... I could leave it as a fraction but I prefer to approximate to the highest integer (Conservatism).
+            t = np.ceil((d2-d1) / speed)
                     
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
