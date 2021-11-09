@@ -126,6 +126,7 @@ class Compartments():
 
         # Set global ceiling arrays
         self.ascent_ceil_bar = np.zeros(16)
+        self.tol = np.zeros(16)
         self.current_deco_stop = 0
         self.max_loading = 0
 
@@ -168,7 +169,10 @@ class Compartments():
         Of course this number only make sense when d <= pFirst...
         '''
 
-        self.GF = (self.d - self.palt)/(self.first_stop - self.palt) * (args.gf_low - args.gf_hi) + args.gf_hi
+        last_stop = self.convert_to_press_abs(args.last_deco)
+
+        self.GF = (self.d - last_stop)/(self.first_stop - last_stop) * (args.gf_low - args.gf_hi) + args.gf_hi # This works... but it is conceptually faulty...
+       #self.GF = (self.d - self.palt)/(self.first_stop - self.palt) * (args.gf_low - args.gf_hi) + args.gf_hi # This DOES NOT work... but it is conceptually correct...
 
     def print_comp(self):
         """ Print the compartment saturation in a beautiful table. """
@@ -480,8 +484,11 @@ class Compartments():
     def check_ascent_ceiling(self):
         """ Computes the ceiling depth given the current inert gas loading. """
 
-        # Update GF
+        # Update GF at current depth
         self.compute_GF()
+
+        # Store the surface GFs for each compartment
+        GF_surf = np.zeros(16)
 
         # For each compartment
         for comp_idx in range(16):
@@ -490,8 +497,11 @@ class Compartments():
             A = ((self.a_n2[comp_idx] * self.compartments[comp_idx,0]) + (self.a_he[comp_idx] * self.compartments[comp_idx,1]))/(self.compartments[comp_idx,2])
             B = ((self.b_n2[comp_idx] * self.compartments[comp_idx,0]) + (self.b_he[comp_idx] * self.compartments[comp_idx,1]))/(self.compartments[comp_idx,2])
 
-            # The first time that we compute the ceiling depth: use GF_low.
-            self.ascent_ceil_bar[comp_idx] = ((self.compartments[comp_idx,0]+self.compartments[comp_idx,1]) - self.GF * A) / ( self.GF/B - self.GF + 1)
+            M = (self.palt / B) + A
+            GF_surf[comp_idx] = (self.compartments[comp_idx,2] - self.palt) / (M -self.palt) * 100
+
+            # Compute the ceiling depth
+            self.ascent_ceil_bar[comp_idx] = ((self.compartments[comp_idx,2]) - self.GF * A) / ( self.GF/B - self.GF + 1)
 
         # Check among all tissues, which one has the highest loading.
         self.max_loading = np.max(self.ascent_ceil_bar)
@@ -506,16 +516,16 @@ class Compartments():
 
         if self.current_deco_stop <= 0:
             self.current_deco_stop = 0
-
         
 
         # Print Debug info
-        if args.debug:
+        if args.debug:          
             print("")
             print("****************** Ceiling check ******************")
             print("Current Deco Stop [3m]:", self.current_deco_stop)
             print("Current True Stop [m]:", self.convert_to_depth(self.max_loading))
             print("Current Gradient Factor [%]:", self.GF*100)
+            print("Current Surface Gradient Factor [%]:", np.max(GF_surf))
             print("Current Ascent Ceilings [bar]:", self.ascent_ceil_bar)
             print("****************** Ceiling check ******************")
 
@@ -608,7 +618,8 @@ class Compartments():
 
         # Check if d2 is still a ceiling (check off-gassing during ascent)      
         self.d = d2
-        self.check_ascent_ceiling()
+        if self.d > self.palt:
+            self.check_ascent_ceiling()
 
         # If not go there
         if self.current_deco_stop != int(np.round(self.convert_to_depth(d2))):
