@@ -235,8 +235,8 @@ class Compartments():
             RN2a = self.speed_descent * self.fn2[self.current_gas]
             RHe = self.speed_descent * self.fhe[self.current_gas]
 
-            # The np.ceil is my choice ... I could leave it as a fraction but I prefer to approximate to the highest integer (Conservatism).
-            t = np.ceil((d2-d1) / self.speed_descent)
+            # The np.round is my choice ... I could leave it as a fraction but I prefer to approximate to the next integer.
+            t = np.round((d2-d1) / self.speed_descent)
                     
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
@@ -336,7 +336,7 @@ class Compartments():
         self.dive_profile["D"].append(str(depth))
         self.dive_profile["T"].append(self.start)
         self.dive_profile["R"].append(self.run)
-        self.dive_profile["S"].append(self.run - self.start)
+        self.dive_profile["S"].append(int(self.run - self.start))
         self.dive_profile["G"].append(self.gas_labels[self.current_gas])
         self.dive_profile["V"].append(gas_consumed)
 
@@ -416,8 +416,8 @@ class Compartments():
 
             RN2a = speed * self.fn2[self.current_gas]
             RHe = speed * self.fhe[self.current_gas]
-            # The np.ceil is my choice ... I could leave it as a fraction but I prefer to approximate to the highest integer (Conservatism).
-            t = np.ceil((d2-d1) / speed)
+            # The np.round is my choice ... I could leave it as a fraction but I prefer to approximate to the next integer.
+            t = np.round((d2-d1) / speed)
                     
             kN2 = np.log(2) / self.ht_n2[comp_idx]
             kHe = np.log(2) / self.ht_he[comp_idx]
@@ -500,8 +500,14 @@ class Compartments():
         self.current_deco_stop = self.convert_to_depth(self.max_loading)
         self.current_deco_stop = int(3 * np.ceil(self.current_deco_stop / 3))
                 
-        if self.current_deco_stop < 0:
+        # We want the last positive stop to be at the user defined depth!
+        if self.current_deco_stop > 0 and self.current_deco_stop < args.last_deco:
+            self.current_deco_stop = args.last_deco
+
+        if self.current_deco_stop <= 0:
             self.current_deco_stop = 0
+
+        
 
         # Print Debug info
         if args.debug:
