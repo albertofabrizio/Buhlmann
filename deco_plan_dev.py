@@ -170,9 +170,7 @@ class Compartments():
         '''
 
         last_stop = self.convert_to_press_abs(args.last_deco)
-
-        self.GF = (self.d - last_stop)/(self.first_stop - last_stop) * (args.gf_low - args.gf_hi) + args.gf_hi # This works... but it is conceptually faulty...
-       #self.GF = (self.d - self.palt)/(self.first_stop - self.palt) * (args.gf_low - args.gf_hi) + args.gf_hi # This DOES NOT work... but it is conceptually correct...
+        self.GF = (self.d - last_stop)/(self.first_stop - last_stop) * (args.gf_low - args.gf_hi) + args.gf_hi 
 
     def print_comp(self):
         """ Print the compartment saturation in a beautiful table. """
@@ -183,6 +181,19 @@ class Compartments():
     def print_profile(self):
         print("")
         print(tabulate(self.dive_profile, headers=['Depth [m]', 'Time [min]', 'Run [min]', 'Stop [min]', 'Gas [O2/He]', 'Volume Gas [l]']))
+
+        TTS = self.dive_profile["R"][-1] - self.dive_profile["R"][1]
+        print("")
+        print("TTS [min]:", TTS)
+
+        print("")
+        print("Total Volume of gas Used:")
+        for gas_l in self.gas_labels:
+            tot_gas_used = 0 
+            for idx, gas in enumerate(self.dive_profile["G"]):
+                tot_gas_used += int(gas==gas_l) * self.dive_profile["V"][idx]
+
+            print(gas_l + " [l]:", round(tot_gas_used,2))
 
     def go_to_switch(self, switch_depth):
         d1 = self.d
