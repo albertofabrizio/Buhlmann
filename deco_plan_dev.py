@@ -184,6 +184,160 @@ class Compartments():
         print("")
         print(tabulate(self.dive_profile, headers=['Depth [m]', 'Time [min]', 'Run [min]', 'Stop [min]', 'Gas [O2/He]', 'Volume Gas [l]']))
 
+    def go_to_switch(self, switch_depth):
+        d1 = self.d
+        d2 = self.convert_to_press_abs(switch_depth)
+
+        speed = self.speed_deep
+
+        for comp_idx in range(16):
+            p0_n2 = self.compartments[comp_idx,0]
+            p0_he = self.compartments[comp_idx,1]
+
+            pi0_n2 = (d1 - Constants.AlveolarWVP) * self.fn2[self.current_gas]
+            pi0_he = (d1 - Constants.AlveolarWVP) * self.fhe[self.current_gas]
+
+            RN2a = speed * self.fn2[self.current_gas]
+            RHe = speed * self.fhe[self.current_gas]
+            # The np.round is my choice ... I could leave it as a fraction but I prefer to approximate to the next integer.
+            t = np.round((d2-d1) / speed)
+                    
+            kN2 = np.log(2) / self.ht_n2[comp_idx]
+            kHe = np.log(2) / self.ht_he[comp_idx]
+
+            pN2 = pi0_n2 + RN2a*(t - (1/kN2)) - (pi0_n2 - p0_n2 - (RN2a / kN2))* np.exp(-kN2*t)
+            pHe = pi0_he + RHe*(t - (1/kHe)) - (pi0_he - p0_he - (RHe / kHe))* np.exp(-kHe*t)
+
+            self.compartments[comp_idx,0] = pN2
+            self.compartments[comp_idx,1] = pHe
+            self.compartments[comp_idx,2] = pN2 + pHe
+
+        # Add descent to runtime
+        self.run += t
+        
+        # Compute gas needed for descent
+        self.gas_consumed_ascent_deep += self.sac * ((d1+d2)/2)/ self.palt * t
+        
+        # Print Debug info
+
+        if args.debug:
+            print("")
+            print("****************** Go to Switch ******************")
+            print("Starting depth [bar]:", d1)
+            print("Final depth [bar]:", d2)
+            print("Ascent time [min]:", t)
+            print("Ascent speed [bar/min]:", speed)
+            print("")
+            print("Current Runtime [min]:", self.run)
+            print("Current Gas [O2/He]:", self.gas_labels[self.current_gas])
+            print("Gas Volume used [l]:", self.gas_consumed_ascent_deep)
+            print("Saturation of Tissue Compartments:")
+            self.print_comp()
+            print("****************** Go to Switch ******************")
+
+        # Check if d2 is still a ceiling (check off-gassing during ascent)      
+        self.d = d2
+
+        # Update dive profile
+        self.dive_profile["D"].append(str(round(self.convert_to_depth(self.start_depth)))+" -> "+str(round(self.convert_to_depth(d2))))
+        self.dive_profile["T"].append(self.start)
+        self.dive_profile["R"].append(self.run)
+        self.dive_profile["S"].append("-")
+        self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+        self.dive_profile["V"].append(self.gas_consumed_ascent_deep)
+
+        self.start = self.run
+        self.start_depth = round(self.convert_to_depth(d2))
+
+    def isobaric_CD_ratio(self, oldN2, newN2, oldHe, newHe):
+
+        test = (newHe - oldHe) * 100 / 5
+
+        if np.round(np.abs(test),1) < np.round((newN2 - oldN2) * 100, 1) and np.round((newN2 - oldN2),1) > 0 and np.round(test,1) < 0:
+            print("Warning: the increase in N2 content exceeds 5 times the decrease in He. Possible ICD warning.")
+            print("N2 Increase:", np.round((newN2 - oldN2) * 100,1),"%")
+            print("He Decrease:", np.round((newHe - oldHe) * 100,1),"%")
+
+    def stay_at_switch(self):
+
+        time = 2 # Stay 2 minutes at gas switch
+
+        for comp_idx in range(16):
+
+            p0_n2 = self.compartments[comp_idx,0]
+            p0_he = self.compartments[comp_idx,1]
+
+            pi_n2 = (self.d - Constants.AlveolarWVP) * self.fn2[self.current_gas]
+            pN2 = p0_n2 + (pi_n2 - p0_n2)*(1-2.0**(-time/self.ht_n2[comp_idx]))
+
+            pi_he = (self.d - Constants.AlveolarWVP) * self.fhe[self.current_gas]
+            pHe = p0_he + (pi_he - p0_he)*(1-2.0**(-time/self.ht_he[comp_idx]))
+
+            self.compartments[comp_idx,0] = pN2
+            self.compartments[comp_idx,1] = pHe
+            self.compartments[comp_idx,2] = pN2 + pHe
+
+        # Add descent to runtime
+        self.run += time
+
+        # Compute gas needed for descent
+        gas_consumed = self.sac * self.d/ self.palt * time
+
+        # Print Debug info
+        if args.debug:
+            print("")
+            print("****************** Bottom ******************")
+            print("Current depth [bar]:", self.d)
+            print("Time at depth [min]:", time)
+            print("")
+            print("Current Runtime [min]:", self.run)
+            print("Current Gas [O2/He]:", self.gas_labels[self.current_gas])
+            print("Gas Volume used [l]:", gas_consumed)
+            print("Saturation of Tissue Compartments:")
+            self.print_comp()
+            print("****************** Bottom ******************")
+
+        # Update Dive Profile
+        self.dive_profile["D"].append(str(round(self.convert_to_depth(self.d))))
+        self.dive_profile["T"].append(self.start)
+        self.dive_profile["R"].append(self.run)
+        self.dive_profile["S"].append(int(self.run - self.start))
+        self.dive_profile["G"].append(self.gas_labels[self.current_gas])
+        self.dive_profile["V"].append(gas_consumed)
+
+    def gas_switch(self, switch_depth):
+
+        # Go to the switch depth with old gas
+        self.go_to_switch(switch_depth)
+
+        # Switch Gases
+        i = 0
+        tmp_old = 2 # If tmp is bigger than 1.61325, the argument of the if statement will be anyway False
+        for fo2 in self.fo2:
+            tmp = 1.61325 - self.d * fo2
+            if tmp >= 0 and tmp_old > tmp:
+                tmp_old = tmp
+                better = i                
+            i+=1
+
+        if better != self.current_gas:
+            print("Switching gas at a depth of:", np.round((self.d - self.palt)*10.0), "m for fO2 of: ", self.fo2[better])
+
+            # If there is Helium in the old mix check for ICD ratio upon switch.
+            if self.fhe[self.current_gas] != 0:
+                self.isobaric_CD_ratio(self.fn2[self.current_gas], self.fn2[better], self.fhe[self.current_gas], self.fhe[better])
+
+            self.current_gas = better
+
+        # Stay 2 min
+        self.stay_at_switch()
+
+        # go to ceiling loop
+        self.start = self.run
+        self.start_depth = self.d
+        self.check_ascent_ceiling()
+        self.ascent_deep(self.current_deco_stop)
+
 ########################## Main Deco Algorithm ######################## 
 
     def initialize(self):
@@ -401,8 +555,24 @@ class Compartments():
             print("3 m --- 3 min")
             exit()
 
-        # If the program has not exited yet ... Go up to the first ceiling.
-        self.ascent_deep(self.current_deco_stop)
+        # Check if we need to switch gas on the way to the first ceiling.        
+        gas_count = 0 
+        tmp_idx = self.current_gas
+        for gas_mod in self.mod_deco:
+            # If the deco MOD of the gas is bigger than the first ceiling... we need to switch!
+            if gas_mod - self.first_stop > 0:
+                tmp_idx = gas_count                    
+            gas_count += 1
+
+        # If tmp_idx != self.current_gas... we need to switch gas on the way up.
+        if tmp_idx != self.current_gas:
+
+            swich_depth = round(self.convert_to_depth(self.mod_deco[tmp_idx])/3)*3
+            self.gas_switch(swich_depth)
+
+        # Otherwise just go to the first ceiling
+        else:
+            self.ascent_deep(self.current_deco_stop)
 
     def ascent_deep(self, depth_f):
 
