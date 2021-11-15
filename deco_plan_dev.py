@@ -722,6 +722,12 @@ class Compartments():
             if self.current_deco_stop == 0:
                 break
             else:
+                
+                # Check if there is a better gas and switch to it
+                for gas_count, gas_mod in enumerate(self.mod_deco):
+                    if (gas_mod + self.palt - 1 ) - self.d >= 0:
+                        self.current_gas = gas_count
+
                 # Stay 1 min at ceiling
                 self.constant_depth_deco()
                 stop_min += 1
@@ -801,10 +807,6 @@ class Compartments():
         self.d = d2
         if self.d > self.palt:
             self.check_ascent_ceiling()
-
-        # If not go there
-        if self.current_deco_stop != int(np.round(self.convert_to_depth(d2))):
-            self.ascent_shallow(self.current_deco_stop)
 
         # Compute gas consumed
         gas_consumed = self.sac * ((d1+d2)/2)/ self.palt * t
