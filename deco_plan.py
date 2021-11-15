@@ -170,7 +170,11 @@ class Compartments():
         '''
 
         last_stop = self.convert_to_press_abs(args.last_deco)
-        self.GF = (self.d - last_stop)/(self.first_stop - last_stop) * (args.gf_low - args.gf_hi) + args.gf_hi 
+        if self.first_stop != last_stop:
+            self.GF = (self.d - last_stop)/(self.first_stop - last_stop) * (args.gf_low - args.gf_hi) + args.gf_hi 
+        else:
+            self.GF = args.gf_hi
+
 
     def print_comp(self):
         """ Print the compartment saturation in a beautiful table. """

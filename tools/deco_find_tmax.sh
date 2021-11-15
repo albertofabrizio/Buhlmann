@@ -47,15 +47,17 @@ i=1
 while :
 do
     python ../deco_plan.py --depth $depth --time $i  --fo2 0.21 --fhe 0.0 > tmp
-    tot_gas=`awk '/Depth /,0' tmp  | tail -n +3 | awk '{print $3}' | awk '{sum += $1} END {printf "%10.0f\n", sum}'`
+    tot_gas=`tail -1 tmp | awk '{print $3}'`
+    echo $i $tot_gas
+    echo "python ../deco_plan.py --depth $depth --time $i  --fo2 0.21 --fhe 0.0 > tmp"
     
-    if [[ $tot_gas -gt $liters_safe ]]; then
-        break
-    fi
-
-    answer="Gas consumption after $i minutes at depth : $tot_gas [l]"
-    remain_gas=$[ $liters - $tot_gas ]
-    remain_pressure=$(echo "scale=2; $remain_gas/$size" | bc)
+#    if [[ $tot_gas -gt $liters_safe ]]; then
+#        break
+#    fi
+#
+#    answer="Gas consumption after $i minutes at depth : $tot_gas [l]"
+#    remain_gas=$[ $liters - $tot_gas ]
+#    remain_pressure=$(echo "scale=2; $remain_gas/$size" | bc)
     
     i=$[$i+1]
 
