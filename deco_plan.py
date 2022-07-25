@@ -20,7 +20,7 @@ parser.add_argument('--last', type=float, dest='last_deco', default='6', help="L
 parser.add_argument('--speed_d', type=float, dest='speed_descent', default='20', help="Speed of descent [m/min] [default: 18].")
 parser.add_argument('--speed_a_deep', type=float, dest='speed_deep', default='9', help="Speed of ascent from depth to first stop [m/min] [default: 9].")
 parser.add_argument('--speed_a_shallow', type=float, dest='speed_shallow', default='3', help="Speed of ascent from stop to stop [m/min] [default: 3].")
-parser.add_argument('--mod', type=list, nargs=2, dest='mod_user', default=[1.4,1.6], help="User defined ppO2 at maximum operating depth and at deco [bar] [default: 1.4, 1.6].")
+parser.add_argument('--mod', type=float, nargs=2, dest='mod_user', default=[1.4,1.6], help="User defined ppO2 at maximum operating depth and at deco [bar] [default: 1.4, 1.6].")
 
 
 parser.add_argument('--debug', action='store_true', help="Print Debug Info.")
@@ -157,10 +157,10 @@ class Compartments():
         """Returns the maximum operating depth"""
 
         if isdeco:
-            return np.divide(args.mod_user[1],self.fo2)
+            return np.divide(float(args.mod_user[1]),self.fo2)
 
         else:
-            return np.divide(args.mod_user[0],self.fo2)
+            return np.divide(float(args.mod_user[0]),self.fo2)
 
     def compute_GF(self):
         ''' 
